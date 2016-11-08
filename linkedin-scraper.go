@@ -1,3 +1,5 @@
+// +build !appengine
+
 package main
 
 import (
@@ -5,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 	"time"
 
 	"encoding/json"
@@ -19,12 +22,17 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func main() {
+func init() {
 
 	prepDB()
 
 	router := mux.NewRouter()
 	router.HandleFunc(`/recordlead`, JSONCatcher)
+	router.HandleFunc(`/`, index)
+	router.HandleFunc(`/{username}`, archive)
+}
+
+func main() {
 
 	s := &http.Server{
 		Addr:           ":3232",
@@ -35,6 +43,26 @@ func main() {
 	}
 
 	log.Fatal(s.ListenAndServe())
+}
+
+func index(w http.ResponseWriter, r *http.Request) {
+	//login and choice functions go here
+}
+
+func archive(w http.ResponseWriter, r *http.Request) {
+	query, err := url.ParseQuery(r.URL.RawQuery)
+	since, err := strconv.Atoi(query["since"][0])
+	var leads []LeadDetails
+	if since != 0 {
+		leads = retrieveLeads(int64(since)) // Get all new leads since chosen time
+	} else {
+		leads = retrieveLeads(time.Now().UnixNano() - 24*time.Hour.Nanoseconds()) // Get all new leads from the last day
+	}
+	JSONLeads, err := json.Marshal(leads)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Fprint(w, string(JSONLeads))
 }
 
 // JSONCatcher stands ready to receive data from the Tampermonkey script
@@ -104,11 +132,10 @@ func parseLeadDetails(l LeadDetails) {
 	if err != nil {
 		log.Println(err.Error())
 	} else {
-		fmt.Printf("Inserted row for: %s\n", l.FirstName)
+		log.Printf("Inserted row for: %s\n", l.FirstName)
 	}
 
 	tx.Commit()
-	retrieveLeads(time.Now().UnixNano() - 1*time.Hour.Nanoseconds())
 }
 
 func retrieveLeads(since int64) []LeadDetails {
@@ -134,7 +161,6 @@ func retrieveLeads(since int64) []LeadDetails {
 		if err != nil {
 			log.Println(err.Error())
 		}
-		fmt.Printf("%s %s, %s For %s; Email: %s, Phone: %s\n", lead.FirstName, lead.LastName, lead.Title, lead.Company, lead.Email, lead.Phone)
 		leads = append(leads, lead)
 	}
 	return leads
