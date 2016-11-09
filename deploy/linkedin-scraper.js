@@ -53,11 +53,10 @@
         newLead['leadDetails'] = leadDetails;
 
         var req = JSON.stringify(newLead);
-        console.log('New lead incoming');
 
         GM_xmlhttpRequest({
             method: "POST",
-            url: "http://localhost:3232/recordlead",
+            url: "http://lis.jamieduerden.me/recordlead",
             data: req,
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"

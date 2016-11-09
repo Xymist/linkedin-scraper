@@ -1,0 +1,51 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+<dom-module id="csv-button">
+    <template id="csv-ajax-button">
+        <style>
+             :host {}
+        </style>
+        <content>
+            <iron-ajax id="csvAjax" url="/archive?since=[[firstEntry]]&csv=true" on-response="leadsLoaded" handle-as="text"></iron-ajax>
+            <paper-button raised on-tap="makeRequest">Download CSV</paper-button>
+        </content>
+    </template>
+    <script>
+        Polymer({
+            is: "csv-button",
+            properties: {
+                leads: {
+                    type: String,
+                    notify: true
+                },
+                firstEntry: {
+                    type: String
+                }
+            },
+            attached: function () {
+                this.leads = "";
+            },
+            leadsLoaded: function (data) {
+                this.leads = data.detail.response;
+                this.newCSVDownload(this.leads)
+            },
+            makeRequest: function () {
+                var requester = this.$.csvAjax
+                requester.generateRequest()
+            },
+            newCSVDownload: function (data) {
+                var blob = new Blob([data], {type: 'text/csv'});
+                if (window.navigator.msSaveOrOpenBlob) {
+                    window.navigator.msSaveBlob(blob, "leads.csv");
+                } else {
+                  var elem = window.document.createElement('a');
+                    elem.href = URL.createObjectURL(blob);
+                    elem.download = "leads.csv";
+                    document.body.appendChild(elem);
+                    elem.click();
+                    document.body.removeChild(elem);
+                }
+            }
+        });
+    </script>
+</dom-module>

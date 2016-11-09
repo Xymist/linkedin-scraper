@@ -16,6 +16,8 @@ import (
 
 	"strings"
 
+	"encoding/csv"
+
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -59,7 +61,28 @@ func archive(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	w.Write([]byte(string(JSONLeads)))
+	if query["csv"] != nil {
+		fmt.Printf("New CSV request beginning %s\n", query["since"][0])
+		c := csv.NewWriter(w)
+		var header []string
+		header = append(header, "First Name", "Last Name", "Title", "Company", "Email", "Phone", "URL")
+		c.Write(header)
+		for _, l := range leads {
+			var record []string
+			record = append(record, l.FirstName)
+			record = append(record, l.LastName)
+			record = append(record, l.Title)
+			record = append(record, l.Company)
+			record = append(record, l.Email)
+			record = append(record, l.Phone)
+			record = append(record, l.URL)
+			c.Write(record)
+		}
+		c.Flush()
+	} else {
+		fmt.Printf("New JSON request beginning %s\n", query["since"][0])
+		w.Write([]byte(string(JSONLeads)))
+	}
 }
 
 // JSONCatcher stands ready to receive data from the Tampermonkey script
