@@ -15,6 +15,18 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#~0.4.2"
+    "polymer": "Polymer/polymer#~0.4.2",
+    "paper-header-panel": "PolymerElements/paper-header-panel#^1.1.7",
+    "paper-toolbar": "PolymerElements/paper-toolbar#^1.1.7",
+    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.5",
+    "paper-tabs": "PolymerElements/paper-tabs#^1.7.0",
+    "iron-ajax": "PolymerElements/iron-ajax#^1.4.3",
+    "paper-elements": "PolymerElements/paper-elements#^1.0.7",
+    "iron-elements": "PolymerElements/iron-elements#^1.0.10",
+    "iron-grid": "*"
+  },
+  "resolutions": {
+    "polymer": "^1.1.0",
+    "font-roboto": "^1.0.1"
   }
 }

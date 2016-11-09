@@ -1,0 +1,28 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+    background-color: #E5E5E5;
+    font-family: 'RobotoDraft', sans-serif;
+}
+
+#tabs {
+    width: 100%;
+    margin: 0;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    text-transform: uppercase;
+}
+
+.container {
+    width: 80%;
+    margin: 50px auto;
+}
+
+@media (min-width: 481px) {
+    #tabs {
+        width: 250px;
+    }
+}

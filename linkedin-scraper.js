@@ -43,8 +43,8 @@
         leadDetails['lastName'] = fullName[fullName.length - 1];
         leadDetails['title'] = $('.title').text();
         leadDetails['company'] = $('#overview-summary-current td ol li span strong a').text();
-        leadDetails['email'] = $('#email-view ul li a').first.text();
-        leadDetails['phone'] = $('#phone-view ul li').first.text();
+        leadDetails['email'] = $('#email-view ul li a').text();
+        leadDetails['phone'] = $('#phone-view ul li').text();
         leadDetails['url'] = window.location.href;
 
         var newLead = {};
