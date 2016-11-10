@@ -91,7 +91,7 @@ func JSONCatcher(w http.ResponseWriter, r *http.Request) {
 	leadRequest := *new(LeadRequest)
 
 	if err := dc.Decode(&leadRequest); err != nil {
-		log.Print(err.Error())
+		log.Print("Could not decode JSON: " + err.Error())
 	}
 	if leadRequest.UserName == `HenryRackley` {
 		parseLeadDetails(leadRequest.Lead)
@@ -101,7 +101,7 @@ func JSONCatcher(w http.ResponseWriter, r *http.Request) {
 func reduceURL(uri string) string {
 	liURL, err := url.Parse(uri)
 	if err != nil {
-		log.Println(err.Error())
+		log.Println("Could not parse URL: " + err.Error())
 	}
 	return fmt.Sprintf("%s://%s%s", liURL.Scheme, liURL.Host, liURL.Path)
 }
@@ -160,10 +160,10 @@ func parseLeadDetails(l LeadDetails) {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed: leads.url") {
 			updateLeadDetails(l)
 		} else {
-			log.Println(err.Error())
+			log.Println("Problem inserting into database: " + err.Error())
 		}
 	} else {
-		log.Printf("Inserted row for: %s\n", l.FirstName)
+		log.Printf("Inserted row for: %s %s\n", l.FirstName, l.LastName)
 	}
 
 	tx.Commit()
@@ -179,7 +179,7 @@ func updateLeadDetails(l LeadDetails) {
 
 	lead, err := db.Query("select * from leads where leads.url = ? limit 1", l.URL)
 	if err != nil {
-		log.Println(err.Error())
+		log.Println("Could not get user from database: " + err.Error())
 	}
 	lead.Scan(&oldData)
 
@@ -219,6 +219,11 @@ func updateLeadDetails(l LeadDetails) {
 		}
 
 		_, err = stmt.Exec(l.FirstName, l.LastName, l.Title, newCompany, newEmail, newPhone, time.Now().UnixNano(), oldData.URL)
+		if err != nil {
+			log.Printf("Could not update %s %s: %q", l.FirstName, l.LastName, err)
+		} else {
+			log.Printf("Updated details for %s %s.", l.FirstName, l.LastName)
+		}
 
 		tx.Commit()
 	}
@@ -243,7 +248,7 @@ func retrieveLeads(since int64) []LeadDetails {
 		var lead LeadDetails
 		err = rows.Scan(&lead.FirstName, &lead.LastName, &lead.Title, &lead.Company, &lead.Email, &lead.Phone, &lead.URL)
 		if err != nil {
-			log.Println(err.Error())
+			log.Println("Could not scan existing leads: " + err.Error())
 		}
 		leads = append(leads, lead)
 	}

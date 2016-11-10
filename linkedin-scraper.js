@@ -39,18 +39,18 @@
 
         var fullName = $('.full-name').text().split(' ');
 
-        leadDetails['firstName'] = fullName[0];
-        leadDetails['lastName'] = fullName[fullName.length - 1];
-        leadDetails['title'] = $('.title').text();
-        leadDetails['company'] = $('#overview-summary-current td ol li span strong a').text();
-        leadDetails['email'] = $('#email-view ul li a').text();
-        leadDetails['phone'] = $('#phone-view ul li').text();
-        leadDetails['url'] = window.location.href;
+        leadDetails.firstName = fullName[0];
+        leadDetails.lastName = fullName[fullName.length - 1];
+        leadDetails.title = $('.title').text();
+        leadDetails.company = $('#overview-summary-current td ol li span strong a').text();
+        leadDetails.email = $('#email-view ul li a').text();
+        leadDetails.phone = $('#phone-view ul li').text();
+        leadDetails.url = window.location.href;
 
         var newLead = {};
-        newLead['userName'] = userName;
-        newLead['userPass'] = userPass;
-        newLead['leadDetails'] = leadDetails;
+        newLead.userName = userName;
+        newLead.userPass = userPass;
+        newLead.leadDetails = leadDetails;
 
         var req = JSON.stringify(newLead);
 
