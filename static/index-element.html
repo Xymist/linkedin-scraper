@@ -1,0 +1,37 @@
+<link rel="import" href="bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="contact-list.html">
+<link rel="import" href="contact-row.html">
+<link rel="import" href="csv-button.html">
+<link rel="import" href="tab-set.html">
+<dom-module id="index-element">
+    <template id="index-element-set">
+        <style>
+             :host {}
+        </style>
+        <content>
+            <paper-header-panel>
+                <paper-toolbar>
+                    <tab-set first-entry="{{leadLimit}}"></tab-set>
+                    <csv-button first-entry="[[leadLimit]]"></csv-button>
+                </paper-toolbar>
+                <div class="container" layout vertical center>
+                    <contact-list first-entry="[[leadLimit]]"></contact-list>
+                </div>
+            </paper-header-panel>
+        </content>
+    </template>
+    <script>
+        Polymer({
+            is: "index-element",
+            properties: {
+                leadLimit: {
+                    type: String
+                }
+            },
+            attached: function () {
+                this.leadLimit = "0";
+            }
+        });
+    </script>
+</dom-module>

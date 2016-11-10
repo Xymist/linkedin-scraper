@@ -1,0 +1,41 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/paper-tabs/paper-tabs.html">
+<dom-module id="tab-set">
+    <template id="nav-tab-set">
+        <style>
+             :host {}
+        </style>
+        <content>
+            <paper-tabs id="tabs" selected="0" self-end>
+                <paper-tab on-tap="setAllTime">All</paper-tab>
+                <paper-tab on-tap="setHourly">Hourly</paper-tab>
+                <paper-tab on-tap="setToday">Today</paper-tab>
+            </paper-tabs>
+        </content>
+    </template>
+    <script>
+        Polymer({
+            is: "tab-set",
+            properties: {
+                firstEntry: {
+                    type: String,
+                    notify: true
+                }
+            },
+            attached: function () {
+                this.firstEntry = "0";
+            },
+            setAllTime: function () {
+                this.firstEntry = "0";
+            },
+            setHourly: function () {
+                t = (Date.now() - (1000 * 60 * 60)) * 1000000
+                this.firstEntry = t;
+            },
+            setToday: function () {
+                t = (Date.now() - (1000 * 60 * 60 * 24)) * 1000000
+                this.firstEntry = t;
+            }
+        });
+    </script>
+</dom-module>
