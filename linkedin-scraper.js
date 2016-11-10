@@ -56,7 +56,7 @@
 
         GM_xmlhttpRequest({
             method: "POST",
-            url: "http://lis.jamieduerden.me/recordlead",
+            url: "https://lis.jamieduerden.me/recordlead",
             data: req,
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"

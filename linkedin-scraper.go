@@ -124,6 +124,10 @@ func stripTitle(leadTitle string) string {
 }
 
 func parseLeadDetails(l LeadDetails) {
+	if l.FirstName == "" {
+		log.Println("Blank input received, skipping")
+		return
+	}
 
 	l.URL = reduceURL(l.URL)
 	l.Company = findCompany(l.Title, l.Company)
