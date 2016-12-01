@@ -2,21 +2,18 @@ package main
 
 import (
 	"database/sql"
+	"encoding/csv"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
-	"encoding/json"
-
-	"fmt"
-
-	"net/url"
-
-	"strings"
-
-	"encoding/csv"
+	"github.com/Xymist/emailVerifier"
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
@@ -132,7 +129,18 @@ func parseLeadDetails(l LeadDetails) {
 	l.Title = stripTitle(l.Title)
 
 	if len([]rune(l.Email)) < 3 {
-		l.Email = ""
+		ea, err := emailVerifier.FindEmail(l.FirstName, l.LastName, l.Company)
+		if err != nil {
+			l.Email = ""
+			log.Println(err.Error())
+		} else {
+			l.Email = ea
+		}
+	} else {
+		if err := emailVerifier.VerifyEmail(l.Email); err != nil {
+			l.Email = ""
+			log.Println("Email invalid: " + err.Error())
+		}
 	}
 
 	if len([]rune(l.Phone)) < 3 {
