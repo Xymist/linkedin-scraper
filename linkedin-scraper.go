@@ -1,3 +1,18 @@
+// Copyright (C) 2016 James Duerden (Xymist)
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package main
 
 import (
@@ -105,6 +120,14 @@ func reduceURL(uri string) string {
 
 func findCompany(leadTitle string, leadCompany string) string {
 	if len([]rune(leadCompany)) > 3 {
+		ltd, err := regexp.Compile(`\s(l|L)(t|T)(d|D).?`)
+		if err != nil {
+			return leadCompany
+		}
+		if ltd.MatchString(leadCompany) {
+			fmt.Println("Stripped LTD")
+			return ltd.ReplaceAllString(leadCompany, "")
+		}
 		return leadCompany
 	}
 	if strings.Contains(leadTitle, ` at `) {
@@ -170,7 +193,8 @@ func parseLeadDetails(l LeadDetails) {
 	_, err = stmt.Exec(l.FirstName, l.LastName, l.Title, l.Company, l.Email, l.Phone, l.URL, time.Now().UnixNano(), time.Now().UnixNano())
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed: leads.url") {
-			updateLeadDetails(l)
+			tx.Commit()
+			updateLeadDetails(l, db)
 		} else {
 			log.Println("Problem inserting into database: " + err.Error())
 		}
@@ -181,13 +205,8 @@ func parseLeadDetails(l LeadDetails) {
 	tx.Commit()
 }
 
-func updateLeadDetails(l LeadDetails) {
+func updateLeadDetails(l LeadDetails, db *sql.DB) {
 	var oldData LeadDetails
-	db, err := sql.Open("sqlite3", "./leads.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
 
 	lead, err := db.Query("select * from leads where leads.url = ? limit 1", l.URL)
 	if err != nil {
