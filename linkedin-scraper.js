@@ -37,10 +37,7 @@
 
         var leadDetails = {};
 
-        var fullName = $('.full-name').text().split(' ');
-
-        leadDetails.firstName = fullName[0];
-        leadDetails.lastName = fullName[fullName.length - 1];
+        leadDetails.fullName = $('.full-name').text().split(' ');
         leadDetails.title = $('.title').text();
         leadDetails.company = $('#overview-summary-current td ol li span strong a').text();
         leadDetails.email = $('#email-view ul li a').text();

@@ -143,11 +143,39 @@ func stripTitle(leadTitle string) string {
 	return leadTitle
 }
 
+func stripAndDissect(name string) (string, string) {
+	honours := []string{"MA", "BA", "MSc", "BSc", "MEng", "FInstSMM", "MCIPS", "CEng", "MIMechE", "PhD"}
+	clean, err := regexp.Compile(`[^A-Za-z0-9\s]`)
+	if err != nil {
+		fmt.Println("Regex failed")
+	}
+	splitName := strings.Split(name, " ")
+	names := []string{}
+	for _, w := range splitName {
+		w = clean.ReplaceAllString(w, "")
+		if sliceContains(honours, w) == false {
+			names = append(names, w)
+		}
+	}
+	return names[0], names[len(names)-1]
+}
+
+func sliceContains(slice []string, check string) bool {
+	for _, elem := range slice {
+		if elem == check {
+			return true
+		}
+	}
+	return false
+}
+
 func parseLeadDetails(l LeadDetails) {
-	if l.FirstName == "" {
+	if l.FullName == "" {
 		log.Println("Blank input received, skipping")
 		return
 	}
+
+	l.FirstName, l.LastName = stripAndDissect(l.FullName)
 
 	l.URL = reduceURL(l.URL)
 	l.Company = findCompany(l.Title, l.Company)
@@ -184,6 +212,7 @@ func parseLeadDetails(l LeadDetails) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	stmt, err := tx.Prepare("insert into leads(firstName, lastName, title, company, email, phone, url, created_at, updated_at) values(?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		log.Fatal(err)
@@ -191,9 +220,9 @@ func parseLeadDetails(l LeadDetails) {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(l.FirstName, l.LastName, l.Title, l.Company, l.Email, l.Phone, l.URL, time.Now().UnixNano(), time.Now().UnixNano())
+	tx.Commit()
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed: leads.url") {
-			tx.Commit()
 			updateLeadDetails(l, db)
 		} else {
 			log.Println("Problem inserting into database: " + err.Error())
@@ -201,30 +230,18 @@ func parseLeadDetails(l LeadDetails) {
 	} else {
 		log.Printf("Inserted row for: %s %s\n", l.FirstName, l.LastName)
 	}
-
-	tx.Commit()
 }
 
 func updateLeadDetails(l LeadDetails, db *sql.DB) {
 	var oldData LeadDetails
 
-	lead, err := db.Query("select * from leads where leads.url = ? limit 1", l.URL)
+	lead := db.QueryRow("select ID, firstName, lastName, company, email, phone, title, url from leads where leads.url = ? limit 1", l.URL)
+	err := lead.Scan(&oldData.ID, &oldData.FirstName, &oldData.LastName, &oldData.Company, &oldData.Email, &oldData.Phone, &oldData.Title, &oldData.URL)
 	if err != nil {
-		log.Println("Could not get user from database: " + err.Error())
+		log.Fatal(err)
 	}
-	lead.Scan(&oldData)
 
 	if (l.FirstName != oldData.FirstName) || (l.LastName != oldData.LastName) || (l.Company != oldData.Company) || (l.Email != oldData.Email) || (l.Phone != oldData.Phone) || (l.Title != oldData.Title) {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
-		stmt, err := tx.Prepare("update leads set firstName=?, lastName=?, title=?, company=?, email=?, phone=?, updated_at=? where leads.url = ?")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer stmt.Close()
-
 		var (
 			newCompany string
 			newEmail   string
@@ -249,14 +266,16 @@ func updateLeadDetails(l LeadDetails, db *sql.DB) {
 			newPhone = oldData.Phone
 		}
 
-		_, err = stmt.Exec(l.FirstName, l.LastName, l.Title, newCompany, newEmail, newPhone, time.Now().UnixNano(), oldData.URL)
+		res, err := db.Exec("update leads set firstName = ?, lastName = ?, title = ?, company = ?, email = ?, phone = ?, updated_at = ? where url = ?", l.FirstName, l.LastName, l.Title, newCompany, newEmail, newPhone, time.Now().UnixNano(), oldData.URL)
+		rowCnt, err := res.RowsAffected()
 		if err != nil {
+			log.Fatal(err)
+		}
+		if err != nil || rowCnt == 0 {
 			log.Printf("Could not update %s %s: %q", l.FirstName, l.LastName, err)
 		} else {
 			log.Printf("Updated details for %s %s.", l.FirstName, l.LastName)
 		}
-
-		tx.Commit()
 	}
 }
 
@@ -309,6 +328,7 @@ type LeadRequest struct {
 
 type LeadDetails struct {
 	ID        int    `json:"id"`
+	FullName  string `json:"fullName"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Title     string `json:"title"`
