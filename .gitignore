@@ -3,3 +3,4 @@ linkedin-scraper
 linkedin-scraper.exe
 deploy.sh
 scraper.tar.gz
+node_modules
