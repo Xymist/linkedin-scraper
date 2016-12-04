@@ -12,11 +12,11 @@
 // @connect *
 // ==/UserScript==
 
-(function () {
+(function() {
     'use strict';
 
     var pageURLCheckTimer = setInterval(
-        function () {
+        function() {
             if (
                 this.lastPathStr !== location.pathname ||
                 this.lastQueryStr !== location.search ||
@@ -37,9 +37,9 @@
 
         var leadDetails = {};
 
-        leadDetails.fullName = $('.full-name').text().split(' ');
+        leadDetails.fullName = $('.full-name').text();
         leadDetails.title = $('.title').text();
-        leadDetails.company = $('#overview-summary-current td ol li span strong a').text();
+        leadDetails.company = $('#overview-summary-current td ol li span strong a').text().split(',')[0];
         leadDetails.email = $('#email-view ul li a').text();
         leadDetails.phone = $('#phone-view ul li').text();
         leadDetails.url = window.location.href;
@@ -52,12 +52,12 @@
         var req = JSON.stringify(newLead);
 
         GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://lis.jamieduerden.me/recordlead",
+            method: 'POST',
+            url: 'https://lis.jamieduerden.me/recordlead',
             data: req,
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            }
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
         });
     }
 })();

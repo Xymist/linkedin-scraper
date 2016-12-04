@@ -144,7 +144,10 @@ func stripTitle(leadTitle string) string {
 }
 
 func stripAndDissect(name string) (string, string) {
-	honours := []string{"MA", "BA", "MSc", "BSc", "MEng", "FInstSMM", "MCIPS", "CEng", "MIMechE", "PhD"}
+	honours := []string{
+		"MA", "BA", "MSc", "BSc", "MEng",
+		"FInstSMM", "MCIPS", "CEng", "MIMechE",
+		"PhD", "hons"}
 	clean, err := regexp.Compile(`[^A-Za-z0-9\s]`)
 	if err != nil {
 		fmt.Println("Regex failed")
@@ -153,14 +156,14 @@ func stripAndDissect(name string) (string, string) {
 	names := []string{}
 	for _, w := range splitName {
 		w = clean.ReplaceAllString(w, "")
-		if sliceContains(honours, w) == false {
+		if stringSliceContains(honours, w) == false {
 			names = append(names, w)
 		}
 	}
 	return names[0], names[len(names)-1]
 }
 
-func sliceContains(slice []string, check string) bool {
+func stringSliceContains(slice []string, check string) bool {
 	for _, elem := range slice {
 		if elem == check {
 			return true
